@@ -5,7 +5,7 @@
 // USB hub emulation support (ported from QEMU)
 //
 // Copyright (C) 2005       Fabrice Bellard
-// Copyright (C) 2009-2023  The Bochs Project
+// Copyright (C) 2009-2026  The Bochs Project
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -278,6 +278,12 @@ bool usb_hub_device_c::set_option(const char *option)
     if ((hub.n_ports < 2) || (hub.n_ports > USB_HUB_MAX_PORTS)) {
       BX_ERROR(("ignoring invalid number of ports (%d)", hub.n_ports));
       hub.n_ports = USB_HUB_DEF_PORTS;
+    } else {
+//      if (hub.n_ports > 4) {
+//        hub.config->set_options(bx_list_c::SHOW_PARENT | bx_list_c::USE_SCROLL_WINDOW);
+//      } else {
+        hub.config->set_options(bx_list_c::SHOW_PARENT);
+//      }
     }
     return 1;
   }

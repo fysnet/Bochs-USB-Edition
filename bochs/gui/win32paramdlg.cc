@@ -524,7 +524,11 @@ HWND CreateGroupbox(HWND hDlg, UINT cid, UINT xpos, UINT ypos, SIZE size, BOOL h
   r.top = ypos;
   r.right = r.left + size.cx;
   r.bottom = r.top + size.cy;
-  MapDialogRect(hDlg, &r);
+  if (IsScrollWindow(hDlg)) {
+    MapDialogRect(GetParent(hDlg), &r);
+  } else {
+    MapDialogRect(hDlg, &r);
+  }
   if (!root && (list->get_options() & list->USE_BOX_TITLE)) {
     title = list->get_title();
   }
@@ -711,11 +715,13 @@ HWND CreateCombobox(HWND hDlg, UINT cid, UINT xpos, UINT ypos, BOOL hide, bx_par
 }
 
 
-HWND CreateScrollWindow(HWND hDlg, int xpos, int ypos, int width, int height)
+HWND CreateScrollWindow(HWND hDlg, UINT cid, int xpos, int ypos, int width, int height, BOOL hide)
 {
   RECT r;
   HWND scrollwin;
+  int code;
 
+  code = ID_PARAM + cid;
   r.left = xpos;
   r.top = ypos;
   r.right = r.left + width;
@@ -724,8 +730,8 @@ HWND CreateScrollWindow(HWND hDlg, int xpos, int ypos, int width, int height)
   scrollwin = CreateWindowEx(WS_EX_CLIENTEDGE | WS_EX_CONTROLPARENT, "ScrollWin",
                              "scrollwin", WS_CHILD | WS_CLIPCHILDREN | WS_TABSTOP | WS_VSCROLL,
                              r.left, r.top, r.right-r.left+1, r.bottom-r.top+1,
-                             hDlg, NULL, NULL, NULL);
-  ShowWindow(scrollwin, SW_SHOW);
+                             hDlg, (HMENU)code, NULL, NULL);
+  ShowWindow(scrollwin, hide ? SW_HIDE : SW_SHOW);
   return scrollwin;
 }
 
@@ -737,10 +743,6 @@ void EnableParam(HWND hDlg, UINT cid, bx_param_c *param, BOOL val)
     cid = findDlgIDFromParam(param);
   }
   if (param->get_type() != BXT_LIST) {
-    bx_list_c *list = (bx_list_c*)param->get_parent();
-    if (list->get_options() & list->USE_SCROLL_WINDOW) {
-      hDlg = FindWindowEx(hDlg, NULL, "ScrollWin", NULL);
-    }
     EnableWindow(GetDlgItem(hDlg, ID_LABEL + cid), val);
     EnableWindow(GetDlgItem(hDlg, ID_PARAM + cid), val);
     Button = GetDlgItem(hDlg, ID_BROWSE + cid);
@@ -784,6 +786,24 @@ UINT GetLabelText(bx_param_c *param, bx_list_c *list, char *buffer)
   return (len * 4);
 }
 
+UINT calcYSize(bx_list_c *list)
+{
+  UINT i, items, ysize;
+  bx_param_c *param;
+
+  ysize = 0;
+  items = list->get_size();
+  for (i = 0; i < items; i++) {
+    param = list->get(i);
+    if (param->get_type() == BXT_LIST) {
+      ysize += (calcYSize((bx_list_c*)param) + 6);
+    } else {
+      ysize += 20;
+    }
+  }
+  return ysize;
+}
+
 SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL hide, bx_list_c *list, UINT grpbox)
 {
   SIZE size, lsize;
@@ -807,7 +827,7 @@ SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL h
   if (options & list->USE_TAB_WINDOW) {
     y = ypos + 15;
     size.cy = 18;
-  } else if (options & list->USE_SCROLL_WINDOW) {
+  } else if ((options & list->USE_SCROLL_WINDOW) && (calcYSize(list) > 320)) {
     x0 = 5;
     y = 5;
     size.cy = 3;
@@ -834,9 +854,9 @@ SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL h
   if (size.cx < (int)(x2 - x0 + 5)) {
     size.cx = x2 - x0 + 5;
   }
-  if ((items > 16) && (options & list->USE_SCROLL_WINDOW)) {
+  if ((options & list->USE_SCROLL_WINDOW) && (calcYSize(list) > 320)) {
     size.cx += 20;
-    scrollwin = CreateScrollWindow(hDlg, xpos, ypos, size.cx, 325);
+    scrollwin = CreateScrollWindow(hDlg, lid, xpos, ypos, size.cx, 325, hide);
     vrect.left = vrect.top = 0;
     vrect.right = size.cx;
     vrect.bottom = size.cy;
@@ -850,7 +870,7 @@ SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL h
     if (!SIM->get_init_done() || param->get_runtime_param()) {
       ihide = hide || ((i != 0) && (options & list->USE_TAB_WINDOW));
       if (param->get_type() == BXT_LIST) {
-        lsize = CreateParamList(hDlg, mid, cid, x0 + 4, y + 1, ihide, (bx_list_c*)param, (options & list->USE_TAB_WINDOW) ? 1 : 2);
+        lsize = CreateParamList(hParent, mid, cid, x0 + 4, y + 1, ihide, (bx_list_c*)param, (options & list->USE_TAB_WINDOW) ? 1 : 2);
         if ((lsize.cx + 18) > size.cx) {
           size.cx = lsize.cx + 18;
         }
@@ -882,15 +902,10 @@ SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL h
           }
         }
         if (!param->get_enabled()) {
-          EnableParam(hDlg, cid, param, FALSE);
+          EnableParam(hParent, cid, param, FALSE);
         }
         y += 20;
-        if ((scrollwin == NULL) || (i < 16)) {
-          size.cy += 20;
-        }
-        if (scrollwin != NULL) {
-          vrect.bottom += 20;
-        }
+        size.cy += 20;
       }
     }
     cid++;
@@ -899,8 +914,19 @@ SIZE CreateParamList(HWND hDlg, UINT mid, UINT lid, UINT xpos, UINT ypos, BOOL h
     CreateTabControl(hDlg, lid, xpos, ypos, size, hide, list);
     size.cy += 4;
   } else if (scrollwin != NULL) {
+    RECT r;
+    r.left = xpos;
+    r.top = ypos;
+    r.right = size.cx;
+    r.bottom = 325;
+    MapDialogRect(hDlg, &r);
+    MoveWindow(scrollwin, r.left, r.top, r.right, r.bottom, TRUE);
+    if (size.cy > vrect.bottom) {
+      vrect.bottom = size.cy;
+    }
     MapDialogRect(hDlg, &vrect);
     SendMessage(scrollwin, WM_USER, 0x1234, vrect.bottom);
+    size.cy = 325;
   } else if (grpbox > 0) {
     CreateGroupbox(hDlg, lid, xpos, ypos, size, hide, list, (grpbox == 1));
   }
@@ -1058,6 +1084,9 @@ void ShowParamList(HWND hDlg, UINT lid, BOOL show, bx_list_c *list)
 
   if (lid < 500) {
     ShowWindow(GetDlgItem(hDlg, ID_PARAM + lid), show ? SW_SHOW : SW_HIDE);
+    if (list->get_options() & list->USE_SCROLL_WINDOW) {
+      hDlg = GetDlgItem(hDlg, ID_PARAM + lid);
+    }
   }
   cid = findDlgListBaseID(list);
   if (list->get_options() & list->USE_TAB_WINDOW) {
@@ -1103,6 +1132,12 @@ void ProcessDependentList(HWND hDlg, bx_param_c *param, BOOL enabled)
   deplist = param->get_dependent_list();
   if (deplist != NULL) {
     cid = findDlgIDFromParam(param);
+    if (GetDlgItem(hDlg, ID_PARAM + cid) == NULL) {
+      hDlg = FindWindowEx(hDlg, NULL, "ScrollWin", NULL);
+      if ((hDlg == NULL) || (GetDlgItem(hDlg, ID_PARAM + cid) == NULL)) {
+        return;
+      }
+    }
     if (param->get_type() == BXT_PARAM_ENUM) {
       eparam = (bx_param_enum_c*)param;
       value = SendMessage(GetDlgItem(hDlg, ID_PARAM + cid), CB_GETCURSEL, 0, 0);
