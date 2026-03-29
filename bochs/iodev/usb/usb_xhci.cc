@@ -188,6 +188,23 @@ Bit32s usb_xhci_options_save(FILE *fp)
   return 0;
 }
 
+Bit64s usb_xhci_param_handler(bx_param_c *param, bool set, Bit64s val)
+{
+  char name[8];
+
+  if (set && !strcmp(param->get_name(), "n_ports")) {
+    bx_list_c *base = (bx_list_c*)SIM->get_param(BXPN_USB_XHCI);
+    for (int p = 0; p < USB_XHCI_PORTS_MAX; p++) {
+      sprintf(name, "port%u", p+1);
+      bx_list_c *port = (bx_list_c*)SIM->get_param(name, base);
+      for (int i = 0; i < port->get_size(); i++) {
+        port->get(i)->set_enabled(p < val);
+      }
+    }
+  }
+  return val;
+}
+
 // device plugin entry point
 
 PLUGIN_ENTRY_FOR_MODULE(usb_xhci)
@@ -197,10 +214,12 @@ PLUGIN_ENTRY_FOR_MODULE(usb_xhci)
     BX_REGISTER_DEVICE_DEVMODEL(plugin, type, theUSB_XHCI, BX_PLUGIN_USB_XHCI);
     // add new configuration parameter for the config interface
     SIM->init_usb_options("xHCI", "xhci", USB_XHCI_PORTS_MAX, USB_XHCI_PORTS);
+    SIM->get_param_num(BXPN_XHCI_N_PORTS)->set_handler(usb_xhci_param_handler);
     // register add-on option for bochsrc and command line
     SIM->register_addon_option("usb_xhci", usb_xhci_options_parser, usb_xhci_options_save);
   } else if (mode == PLUGIN_FINI) {
     SIM->unregister_addon_option("usb_xhci");
+    SIM->get_param_num(BXPN_XHCI_N_PORTS)->set_handler(NULL);
     bx_list_c *menu = (bx_list_c *) SIM->get_param("ports.usb");
     delete theUSB_XHCI;
     menu->remove("xhci");
@@ -228,7 +247,7 @@ bx_usb_xhci_c::~bx_usb_xhci_c()
 
   SIM->unregister_runtime_config_handler(rt_conf_id);
 
-  for (int i=0; i<USB_XHCI_PORTS_MAX; i++) {
+  for (unsigned i=0; i < hub.n_ports; i++) {
     sprintf(pname, "port%d.device", i+1);
     SIM->get_param_enum(pname, SIM->get_param(BXPN_USB_XHCI))->set_handler(NULL);
     sprintf(pname, "port%d.options", i+1);
