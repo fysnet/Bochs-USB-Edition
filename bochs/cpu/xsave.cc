@@ -397,10 +397,10 @@ void BX_CPP_AttrRegparmN(1) BX_CPU_C::XRSTOR(bxInstruction_c *i)
           BX_ASSERT(xsave_restore[feature].xrstor_init_method);
           CALL_XSAVE_FN(xsave_restore[feature].xrstor_init_method)();
         }
-
-        if (format & feature_mask)
-          offset += xsave_restore[feature].len;
       }
+
+      if (format & feature_mask)
+        offset += xsave_restore[feature].len;
     }
   }
   else {
