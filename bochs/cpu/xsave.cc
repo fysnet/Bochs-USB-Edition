@@ -105,14 +105,11 @@ void BX_CPP_AttrRegparmN(1) BX_CPU_C::XSAVE(bxInstruction_c *i)
 
     if ((requested_feature_bitmap & feature_mask) != 0)
     {
-      if (xsave_restore[feature].xsave_method == NULL) {
-        BX_ERROR(("%s: feature #%d requested to save but not implemented !", i->getIaOpcodeNameShort(), feature));
-        xstate_bv &= ~Bit64u(feature_mask); // W/A, feature not implemented so mark its state as not in use in xstate_bv
-        continue;
-      }
-
       if (! xsaveopt || (xinuse & feature_mask) != 0) {
-        CALL_XSAVE_FN(xsave_restore[feature].xsave_method)(i, eaddr+xsave_restore[feature].offset);
+        if (xsave_restore[feature].xsave_method == NULL)
+          BX_ERROR(("%s: feature #%d requested to save but not implemented !", i->getIaOpcodeNameShort(), feature));
+        else
+          CALL_XSAVE_FN(xsave_restore[feature].xsave_method)(i, eaddr+xsave_restore[feature].offset);
       }
 
       if (xinuse & feature_mask)
@@ -208,13 +205,11 @@ void BX_CPP_AttrRegparmN(1) BX_CPU_C::XSAVEC(bxInstruction_c *i)
 
     if ((requested_feature_bitmap & feature_mask) != 0)
     {
-      if (xsave_restore[feature].xsave_method == NULL) {
-        BX_ERROR(("%s: feature #%d requested to save but not implemented !", i->getIaOpcodeNameShort(), feature));
-        continue;
-      }
-
       if (xinuse & feature_mask) {
-        CALL_XSAVE_FN(xsave_restore[feature].xsave_method)(i, eaddr+offset);
+        if (xsave_restore[feature].xsave_method == NULL)
+          BX_ERROR(("%s: feature #%d requested to save but not implemented !", i->getIaOpcodeNameShort(), feature));
+        else
+          CALL_XSAVE_FN(xsave_restore[feature].xsave_method)(i, eaddr+offset);
       }
 
       offset += xsave_restore[feature].len;
@@ -382,17 +377,17 @@ void BX_CPP_AttrRegparmN(1) BX_CPU_C::XRSTOR(bxInstruction_c *i)
 
       if ((requested_feature_bitmap & feature_mask) != 0)
       {
-        if (xsave_restore[feature].xrstor_method == NULL) {
-          BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
-          continue;
-        }
-
         if (restore_mask & feature_mask) {
-          CALL_XSAVE_FN(xsave_restore[feature].xrstor_method)(i, eaddr+offset);
+          if (xsave_restore[feature].xrstor_method == NULL)
+            BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
+          else
+            CALL_XSAVE_FN(xsave_restore[feature].xrstor_method)(i, eaddr+offset);
         }
         else {
-          BX_ASSERT(xsave_restore[feature].xrstor_init_method);
-          CALL_XSAVE_FN(xsave_restore[feature].xrstor_init_method)();
+          if (xsave_restore[feature].xrstor_init_method == NULL)
+            BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
+          else
+            CALL_XSAVE_FN(xsave_restore[feature].xrstor_init_method)();
         }
       }
 
@@ -409,17 +404,17 @@ void BX_CPP_AttrRegparmN(1) BX_CPU_C::XRSTOR(bxInstruction_c *i)
 
       if ((requested_feature_bitmap & feature_mask) != 0)
       {
-        if (xsave_restore[feature].xrstor_method == NULL) {
-          BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
-          continue;
-        }
-
         if (xstate_bv & feature_mask) {
-          CALL_XSAVE_FN(xsave_restore[feature].xrstor_method)(i, eaddr+xsave_restore[feature].offset);
+          if (xsave_restore[feature].xrstor_method == NULL)
+            BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
+          else
+            CALL_XSAVE_FN(xsave_restore[feature].xrstor_method)(i, eaddr+xsave_restore[feature].offset);
         }
         else {
-          BX_ASSERT(xsave_restore[feature].xrstor_init_method);
-          CALL_XSAVE_FN(xsave_restore[feature].xrstor_init_method)();
+          if (xsave_restore[feature].xrstor_init_method == NULL)
+            BX_ERROR(("%s: feature #%d requested to restore but not implemented !", i->getIaOpcodeNameShort(), feature));
+          else
+            CALL_XSAVE_FN(xsave_restore[feature].xrstor_init_method)();
         }
       }
     }
