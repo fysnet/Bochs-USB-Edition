@@ -793,10 +793,6 @@ bool BX_CPU_C::xsave_opmask_state_xinuse(void)
 // Outside 64-bit mode, ZMM_Hi256 state is in its initial configuration if each of ZMM0_H-ZMM7_H is 0.
 // An execution of XRSTOR or XRSTORS outside 64-bit mode does not update ZMM8_H-ZMM15_H.
 
-// In processor which support only AVX10.VL256 but not AVX10.VL512 ZMM_Hi256 state always tracked as INIT
-// XRSTOR* ignore the contents of the memory corresponding to ZMM_Hi256 state and the corresponding XSTATE_BV bit. 
-// XSAVE zero the memory corresponding ZMM_Hi256, other XSAVE* instructions incorporate INIT optimization.
-
 void BX_CPU_C::xsave_zmm_hi256_state(bxInstruction_c *i, bx_address offset)
 {
   unsigned num_regs = long64_mode() ? 16 : 8;
@@ -850,12 +846,6 @@ bool BX_CPU_C::xsave_zmm_hi256_state_xinuse(void)
 // In 64-bit mode, Hi16_ZMM state is in its initial configuration if each of ZMM16-ZMM31 is 0.
 // Outside 64-bit mode, Hi16_ZMM state is always in its initial configuration.
 // An execution of XRSTOR or XRSTORS outside 64-bit mode does not update ZMM16-ZMM31.
-
-// In processor which support only AVX10.VL256 but not AVX10.VL512:
-// XSAVE* save the lower 256 bits of each ZMM registers in Hi16_ZMM state and zero the memory
-// corresponding to upper 256 bits
-// XRSTOR* restore the lower 256 bit of each ZMM register in Hi16_ZMM state and ignore the contents of
-// the memory corresponding to upper 256 bits.
 
 void BX_CPU_C::xsave_hi_zmm_state(bxInstruction_c *i, bx_address offset)
 {
