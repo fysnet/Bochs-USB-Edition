@@ -4772,7 +4772,7 @@ public: // for now...
 #if BX_SUPPORT_X86_64
   BX_SMF bx_phy_address translate_linear_long_mode(bx_address laddr, Bit32u &lpf_mask, Bit32u &pkey, unsigned user, unsigned rw);
 #if BX_SUPPORT_PKEYS
-  BX_SMF Bit32u handle_pkeys(bx_address laddr, Bit64u entry, unsigned user, unsigned rw);
+  BX_SMF Bit32u handle_pkeys(bx_address laddr, Bit64u entry, unsigned user, bool user_page, unsigned rw);
 #endif
 #endif
 #if BX_SUPPORT_VMX >= 2

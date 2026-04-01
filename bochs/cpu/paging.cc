@@ -774,22 +774,20 @@ BX_CPP_INLINE Bit32u calculate_pat(Bit32u entry, Bit32u lpf_mask)
 #if BX_SUPPORT_X86_64
 
 #if BX_SUPPORT_PKEYS
-Bit32u BX_CPU_C::handle_pkeys(bx_address laddr, Bit64u leaf_entry, unsigned user, unsigned rw)
+Bit32u BX_CPU_C::handle_pkeys(bx_address laddr, Bit64u leaf_entry, unsigned user, bool user_page, unsigned rw)
 {
   Bit32u pkey = 0;
 
   if (rw != BX_EXECUTE) {
     bool isWrite = (rw & 1); // write or r-m-w
 
-    if (BX_CPU_THIS_PTR cr4.get_PKE()) {
+    if (BX_CPU_THIS_PTR cr4.get_PKE() && user_page) {
       pkey = (leaf_entry >> 59) & 0xf;
 
       // check of accessDisable bit set
-      if (user) {
-        if (BX_CPU_THIS_PTR pkru & (1<<(pkey*2))) {
-          BX_ERROR(("protection key access not allowed PKRU=%x pkey=%d", BX_CPU_THIS_PTR pkru, pkey));
-          page_fault(ERROR_PROTECTION | ERROR_PKEY, laddr, user, rw);
-        }
+      if (BX_CPU_THIS_PTR pkru & (1<<(pkey*2))) {
+        BX_ERROR(("protection key access not allowed PKRU=%x pkey=%d", BX_CPU_THIS_PTR pkru, pkey));
+        page_fault(ERROR_PROTECTION | ERROR_PKEY, laddr, user, rw);
       }
 
       // check of writeDisable bit set
@@ -800,8 +798,7 @@ Bit32u BX_CPU_C::handle_pkeys(bx_address laddr, Bit64u leaf_entry, unsigned user
         }
       }
     }
-
-    if (BX_CPU_THIS_PTR cr4.get_PKS() && !user) {
+    else if (BX_CPU_THIS_PTR cr4.get_PKS() && !user_page) {
       pkey = (leaf_entry >> 59) & 0xf;
 
       // check of accessDisable bit set
@@ -891,7 +888,7 @@ bx_phy_address BX_CPU_C::translate_linear_long_mode(bx_address laddr, Bit32u &lp
   }
 
 #if BX_SUPPORT_PKEYS
-  pkey = handle_pkeys(laddr, entry[leaf], user, rw);
+  pkey = handle_pkeys(laddr, entry[leaf], user, IS_USER_PAGE(combined_access) != 0, rw);
 #endif
 
   combined_access = check_leaf_entry_faults(laddr, entry[leaf], combined_access, user, rw, nx_page);
