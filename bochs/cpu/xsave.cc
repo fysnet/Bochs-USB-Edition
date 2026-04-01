@@ -883,7 +883,8 @@ void BX_CPU_C::xrstor_init_hi_zmm_state(void)
 
 bool BX_CPU_C::xsave_hi_zmm_state_xinuse(void)
 {
-  if (!long64_mode()) return true;
+  // Outside 64-bit mode, Hi16_ZMM state is always in its initial configuration
+  if (!long64_mode()) return false;
 
   for(unsigned index=16; index < 32; index++) {
     for (unsigned n=0; n < 4; n++) {
