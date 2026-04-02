@@ -218,15 +218,13 @@ void bx_init_std_nic_options(const char *name, bx_list_c *menu)
 void bx_init_usb_options(const char *usb_name, const char *pname, int maxports, int param0)
 {
   char group[16], name[8], descr[512], label[512];
-  bx_list_c *usb, *usbrt, *deplist, *deplist2;
+  bx_list_c *deplist, *deplist2;
 
-  bx_list_c *ports = (bx_list_c*)SIM->get_param("ports");
-  usb = (bx_list_c*)ports->get_by_name("usb");
-  if (usb == NULL) {
-    usb = new bx_list_c(ports, "usb", "USB Configuration");
-    usb->set_options(usb->USE_TAB_WINDOW | usb->SHOW_PARENT);
+  bx_list_c *usb = (bx_list_c*)SIM->get_param("usb");
+  bx_list_c *rtmenu = (bx_list_c*)SIM->get_param("menu.runtime");
+  bx_list_c *usbrt = (bx_list_c*)rtmenu->get_by_name("usb");
+  if (usbrt == NULL) {
     // prepare runtime options
-    bx_list_c *rtmenu = (bx_list_c*)SIM->get_param("menu.runtime");
     usbrt = new bx_list_c(rtmenu, "usb", "USB options");
     usbrt->set_runtime_param(1);
     usbrt->set_options(usbrt->SHOW_PARENT | usbrt->USE_TAB_WINDOW);
@@ -318,9 +316,6 @@ void bx_init_usb_options(const char *usb_name, const char *pname, int maxports, 
     device->set_dependent_bitmap(0, 0);
   }
   enabled->set_dependent_list(deplist);
-#ifdef WIN32
-  ((bx_list_c*)SIM->get_param(BXPN_MENU_USB_WIN32))->add(menu);
-#endif
 }
 
 #if BX_USB_DEBUGGER
@@ -370,9 +365,6 @@ void bx_init_usb_debug_options(bx_list_c *base)
   );
   type->set_dependent_list(usb_debug->clone(), 1);
   type->set_dependent_bitmap(USB_DEBUG_NONE, 0);
-#ifdef WIN32
-  ((bx_list_c*)SIM->get_param(BXPN_MENU_USB_WIN32))->add(usb_debug);
-#endif
 }
 #endif
 #endif
@@ -1547,26 +1539,23 @@ void bx_init_options()
   };
   menu = new bx_list_c(special_menus, "floppy_boot", "Bochs Disk Options", floppy_boot_init_list);
   menu->set_options(menu->USE_TAB_WINDOW);
-  // serial/parallel menu for win32paramdlg
-  menu = new bx_list_c(special_menus, "ports", "Serial / Parallel Ports Options");
-  menu->set_options(menu->USE_TAB_WINDOW);
-#if BX_SUPPORT_PCIUSB
-  // USB menu for win32paramdlg
-  menu = new bx_list_c(special_menus, "usb", "USB Configuration");
-  menu->set_options(menu->USE_TAB_WINDOW);
-#endif
 #endif
 
   // ports subtree
-  bx_list_c *ports = new bx_list_c(root_param, "ports", "Serial / Parallel / USB Options");
+  bx_list_c *ports = new bx_list_c(root_param, "ports", "Serial / Parallel Options");
   ports->set_options(ports->USE_TAB_WINDOW | ports->SHOW_PARENT);
+  // parallel / serial options initialized in the device plugin code
+
 #if BX_SUPPORT_PCIUSB
+  // USB subtree
+  bx_list_c *usb = new bx_list_c(root_param, "usb", "USB Configuration");
+  usb->set_options(ports->USE_TAB_WINDOW | ports->SHOW_PARENT);
   bx_usbdev_ctl.init();
 #if BX_USB_DEBUGGER
-  bx_init_usb_debug_options(ports);
+  bx_init_usb_debug_options(usb);
 #endif
+  // USB options initialized in the device plugin code
 #endif
-  // parallel / serial / USB options initialized in the device plugin code
 
 #if BX_NETWORKING
   // network subtree

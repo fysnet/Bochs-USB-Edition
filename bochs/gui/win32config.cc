@@ -537,8 +537,8 @@ edit_opts_t start_options[] = {
 #if BX_MAX_ATA_CHANNEL>3
   {"ATA controller 3", "ata.3", false, {0, 0}},
 #endif
-  {"Serial / Parallel", BXPN_MENU_PORTS_WIN32, false, {0, 0}},
-  {"USB configuration", BXPN_MENU_USB_WIN32, false, {0, 0}},
+  {"Serial / Parallel", "ports", false, {0, 0}},
+  {"USB configuration", "usb", false, {0, 0}},
   {"Network card", "network", false, {0, 0}},
   {"Sound card", "sound", false, {0, 0}},
   {"Log Options", "#logopts", false, {0, 0}},

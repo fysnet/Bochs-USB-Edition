@@ -175,7 +175,7 @@ PLUGIN_ENTRY_FOR_MODULE(usb_ehci)
     SIM->register_addon_option("usb_ehci", usb_ehci_options_parser, usb_ehci_options_save);
   } else if (mode == PLUGIN_FINI) {
     SIM->unregister_addon_option("usb_ehci");
-    bx_list_c *menu = (bx_list_c*)SIM->get_param("ports.usb");
+    bx_list_c *menu = (bx_list_c*)SIM->get_param("usb");
     delete theUSB_EHCI;
     menu->remove("ehci");
   } else if (mode == PLUGIN_PROBE) {
@@ -227,9 +227,6 @@ bx_usb_ehci_c::~bx_usb_ehci_c()
 
   bx_list_c *usb_rt = (bx_list_c*)SIM->get_param(BXPN_MENU_RUNTIME_USB);
   usb_rt->remove("ehci");
-#ifdef WIN32
-  ((bx_list_c*)SIM->get_param(BXPN_MENU_USB_WIN32))->remove("usb_ehci");
-#endif
   SIM->get_bochs_root()->remove("usb_ehci");
   BX_DEBUG(("Exit"));
 }

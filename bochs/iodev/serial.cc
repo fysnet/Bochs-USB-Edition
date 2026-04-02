@@ -112,9 +112,6 @@ void serial_init_options(void)
     mode->set_dependent_bitmap(BX_SER_MODE_NULL, 0);
     mode->set_dependent_bitmap(BX_SER_MODE_MOUSE, 0);
   }
-#ifdef WIN32
-  ((bx_list_c*)SIM->get_param(BXPN_MENU_PORTS_WIN32))->add(serial);
-#endif
 }
 
 Bit32s serial_options_parser(const char *context, int num_params, char *params[])
@@ -246,9 +243,6 @@ bx_serial_c::~bx_serial_c(void)
   }
   bx_list_c *misc_rt = (bx_list_c*)SIM->get_param(BXPN_MENU_RUNTIME_MISC);
   misc_rt->remove("serial");
-#ifdef WIN32
-  ((bx_list_c*)SIM->get_param(BXPN_MENU_PORTS_WIN32))->remove("serial");
-#endif
   SIM->get_bochs_root()->remove("serial");
   BX_DEBUG(("Exit"));
 }

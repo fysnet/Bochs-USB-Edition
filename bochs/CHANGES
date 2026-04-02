@@ -40,7 +40,8 @@ Detailed change log :
   - Win32: fix compilation error when SHOW_IPS is not compiled in
 
 - Config interface
-  - Win32 start/run time configure dialogs rewritten and look much more user friendly now
+  - Win32 start/runtime configure dialogs rewritten and look much more user friendly now
+  - USB configuration is now a separate menu item in all config interfaces
   - On Windows make sure file name parameters use backslash as separator
   - Removed backward compatibility mode for USB device options
 
