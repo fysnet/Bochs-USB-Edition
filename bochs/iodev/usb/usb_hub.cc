@@ -264,7 +264,7 @@ usb_hub_device_c::~usb_hub_device_c(void)
     remove_device(i);
   }
   if (SIM->is_wx_selected()) {
-    bx_list_c *usb = (bx_list_c *) SIM->get_param("ports.usb");
+    bx_list_c *usb = (bx_list_c *) SIM->get_param("usb");
     usb->remove(hub.config->get_name());
   }
   bx_list_c *usb_rt = (bx_list_c *) SIM->get_param(BXPN_MENU_RUNTIME_USB);
@@ -330,7 +330,7 @@ bool usb_hub_device_c::init()
     device->set_dependent_bitmap(0, 0);
   }
   if (SIM->is_wx_selected()) {
-    bx_list_c *usb = (bx_list_c *) SIM->get_param("ports.usb");
+    bx_list_c *usb = (bx_list_c *) SIM->get_param("usb");
     usb->add(hub.config);
   }
   sprintf(hub.info_txt, "%d-port USB hub", hub.n_ports);
