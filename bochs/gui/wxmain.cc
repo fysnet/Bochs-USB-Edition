@@ -639,33 +639,51 @@ void MyFrame::OnEditBoot(wxCommandEvent& WXUNUSED(event))
 
 void MyFrame::OnEditSerialParallel(wxCommandEvent& WXUNUSED(event))
 {
-  ParamDialog dlg(this, -1);
   bx_list_c *list = (bx_list_c*) SIM->get_param("ports");
-  dlg.SetTitle(wxString(list->get_title(), wxConvUTF8));
-  dlg.AddParam(list);
-  dlg.SetRuntimeFlag(sim_thread != NULL);
-  dlg.ShowModal();
+  if (list->get_size() > 0) {
+    ParamDialog dlg(this, -1);
+    dlg.SetTitle(wxString(list->get_title(), wxConvUTF8));
+    dlg.AddParam(list);
+    dlg.SetRuntimeFlag(sim_thread != NULL);
+    dlg.ShowModal();
+  } else {
+    wxMessageBox(wxT("Nothing to configure in this section!"),
+                 wxT("Not enabled"), wxOK | wxICON_ERROR, this);
+  }
 }
 
 void MyFrame::OnEditUSB(wxCommandEvent& WXUNUSED(event))
 {
-  ParamDialog dlg(this, -1);
+#if BX_SUPPORT_PCIUSB
   bx_list_c *list = (bx_list_c*) SIM->get_param("usb");
-  dlg.SetTitle(wxString(list->get_title(), wxConvUTF8));
-  dlg.AddParam(list);
-  dlg.SetRuntimeFlag(sim_thread != NULL);
-  dlg.ShowModal();
+  if (list->get_size() > 0) {
+    ParamDialog dlg(this, -1);
+    dlg.SetTitle(wxString(list->get_title(), wxConvUTF8));
+    dlg.AddParam(list);
+    dlg.SetRuntimeFlag(sim_thread != NULL);
+    dlg.ShowModal();
+  }
+  else
+#endif
+  {
+    wxMessageBox(wxT("Nothing to configure in this section!"),
+                 wxT("Not enabled"), wxOK | wxICON_ERROR, this);
+  }
 }
 
 void MyFrame::OnEditNet(wxCommandEvent& WXUNUSED(event))
 {
+#if BX_NETWORKING
   bx_list_c *list = (bx_list_c*) SIM->get_param("network");
-  if (list != NULL) {
+  if (list->get_size() > 0) {
     ParamDialog dlg(this, -1);
     dlg.SetTitle(wxString(list->get_title(), wxConvUTF8));
     dlg.AddParam(list);
     dlg.ShowModal();
-  } else {
+  }
+  else
+#endif
+  {
     wxMessageBox(wxT("Nothing to configure in this section!"),
                  wxT("Not enabled"), wxOK | wxICON_ERROR, this);
   }
