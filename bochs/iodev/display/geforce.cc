@@ -3252,7 +3252,7 @@ void bx_geforce_c::d3d_sample_texture(gf_channel* ch,
     if (tex->unnormalized) {
       Bit32s c = coords[i];
       Bit32u size = tex->size[i];
-      if (c < 0 || c >= size) {
+      if (c < 0 || Bit32u(c) >= size) {
         switch (tex->wrap[i]) {
           case 1:  // WRAP
             c %= size;
@@ -3263,7 +3263,7 @@ void bx_geforce_c::d3d_sample_texture(gf_channel* ch,
             c %= size * 2;
             if (c < 0)
               c += size * 2;
-            if (c >= size)
+            if (Bit32u(c) >= size)
               c = size * 2 - c - 1;
             break;
           default: // CLAMP_TO_EDGE
