@@ -188,7 +188,11 @@ void bx_usb_uhci_c::init(void)
 
 #if BX_USB_DEBUGGER
   if (SIM->get_param_enum(BXPN_USB_DEBUG_TYPE)->get() == USB_DEBUG_UHCI) {
-    SIM->register_usb_debug_type(USB_DEBUG_UHCI);
+    bx_param_string_c *pdev = SIM->get_param_string(BXPN_USB_DEBUG_DEVICE);
+    if (pdev->isempty() || !strcmp(pdev->getptr(), "uhci")) {
+      BX_UHCI_THIS enable_usbdbg();
+      SIM->register_usb_debug_type(USB_DEBUG_UHCI, -1);
+    }
   }
 #endif
 

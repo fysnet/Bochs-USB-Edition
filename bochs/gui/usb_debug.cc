@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (C)      2025  Benjamin David Lunt
-//  Copyright (C) 2003-2025  The Bochs Project
+//  Copyright (C) 2003-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -270,6 +270,7 @@ const char *string_sct_str[] = {
 };
 
 int usb_debug_type = USB_DEBUG_NONE;
+int usb_debug_devid = -1;
 bx_param_c *host_param = NULL;
 Bit32u pci_bar_address;
 bool u_changed[UHCI_REG_COUNT];
@@ -293,13 +294,14 @@ bool uhci_add_queue(struct USB_UHCI_QUEUE_STACK *stack, const Bit32u addr)
   return false;
 }
 
-void usb_dbg_register_type(int type)
+void usb_dbg_register_type(int type, int devid)
 {
   if (type != USB_DEBUG_NONE) {
     if ((type != USB_DEBUG_UHCI) && (type != USB_DEBUG_XHCI)) {
       BX_PANIC(("USB debugger does not yet support type %d", type));
     } else {
       usb_debug_type = type;
+      usb_debug_devid = devid;
       bx_gui->set_usbdbg_bitmap(0);
     }
   }
@@ -405,6 +407,18 @@ Bit32u usb_io_read(Bit16u addr, unsigned io_len)
 void usb_io_write(Bit16u addr, Bit32u value, unsigned io_len)
 {
   bx_devices.outp(addr, value, io_len);
+}
+
+bx_list_c* get_uhci_state()
+{
+  char pname[32];
+
+  if (usb_debug_devid == -1) {
+    strcpy(pname, "usb_uhci");
+  } else {
+    sprintf(pname, "usb_ehci.uhci%d.usb_uhci", usb_debug_devid);
+  }
+  return (bx_list_c*)SIM->get_param(pname, SIM->get_bochs_root());
 }
 
 Bit32u xhci_read_dword(const Bit32u address)

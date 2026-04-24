@@ -288,7 +288,13 @@ void bx_usb_ehci_c::init(void)
     BX_EHCI_THIS uhci[2]->init_uhci(devfunc | 0x02, 0x8086, 0x24c7, 0x01, 0x00, BX_PCI_INTC);
 #if BX_USB_DEBUGGER
     if (SIM->get_param_enum(BXPN_USB_DEBUG_TYPE)->get() == USB_DEBUG_UHCI) {
-      SIM->register_usb_debug_type(USB_DEBUG_UHCI);
+      const char *device = SIM->get_param_string(BXPN_USB_DEBUG_DEVICE)->getptr();
+      if (!strncmp(device, "ehci/uhci", 9) && (strlen(device) == 10) &&
+          (device[9] >= '0') && (device[9] <= '2')) {
+        int devid = device[9] -'0';
+        BX_EHCI_THIS uhci[devid]->enable_usbdbg();
+        SIM->register_usb_debug_type(USB_DEBUG_UHCI, devid);
+      }
     }
 #endif
   } else if (companion_type == EHCI_COMPANION_OHCI) {
@@ -309,7 +315,13 @@ void bx_usb_ehci_c::init(void)
     BX_EHCI_THIS ohci[2]->init_ohci(devfunc | 0x02, 0x8086, 0x880E, 0x00, 0x00, BX_PCI_INTC);
 #if BX_USB_DEBUGGER
     if (SIM->get_param_enum(BXPN_USB_DEBUG_TYPE)->get() == USB_DEBUG_OHCI) {
-      SIM->register_usb_debug_type(USB_DEBUG_OHCI);
+      const char *device = SIM->get_param_string(BXPN_USB_DEBUG_DEVICE)->getptr();
+      if (!strncmp(device, "ehci/ohci", 9) && (strlen(device) == 10) &&
+          (device[9] >= '0') && (device[9] <= '2')) {
+        int devid = device[9] -'0';
+        BX_EHCI_THIS ohci[devid]->enable_usbdbg();
+        SIM->register_usb_debug_type(USB_DEBUG_OHCI, devid);
+      }
     }
 #endif
   } else

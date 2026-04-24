@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (C)      2023  Benjamin David Lunt
-//  Copyright (C) 2003-2025  The Bochs Project
+//  Copyright (C) 2003-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -906,7 +906,7 @@ int uhci_debug_dialog(int type, int param1)
     {"Port 1 Register", NULL, 4, attribs_u_ports}
   };
 
-  UHCI_state = (bx_list_c*)SIM->get_param("usb_uhci", SIM->get_bochs_root());
+  UHCI_state = get_uhci_state();
   if (UHCI_state == NULL)
     return -1;
 

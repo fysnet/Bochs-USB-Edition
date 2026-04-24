@@ -335,6 +335,10 @@ void bx_init_usb_debug_options(bx_list_c *base)
     "type", "HC type",
     "Select Host Controller type",
     usb_debug_type, USB_DEBUG_NONE, USB_DEBUG_NONE);
+  new bx_param_string_c(usb_debug,
+    "device", "HC device",
+    "Select Host Controller device",
+    "", BX_PATHNAME_LEN);
   new bx_param_bool_c(usb_debug,
     "reset", "Trigger on reset",
     "Trigger on Reset",

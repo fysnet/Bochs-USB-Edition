@@ -181,7 +181,7 @@ public:
     void *userdata);
   virtual int configuration_interface(const char* name, ci_command_t command);
 #if BX_USB_DEBUGGER
-  virtual void register_usb_debug_type(int type);
+  virtual void register_usb_debug_type(int type, int devid = -1);
   virtual void usb_debug_trigger(int type, int trigger, Bit64u param0, int param1, int param2);
   virtual int usb_debug_interface(int type, Bit64u param0, int param1, int param2);
 #endif
@@ -938,9 +938,9 @@ int bx_real_sim_c::configuration_interface(const char *ignore, ci_command_t comm
 }
 
 #if BX_USB_DEBUGGER
-void bx_real_sim_c::register_usb_debug_type(int type)
+void bx_real_sim_c::register_usb_debug_type(int type, int devid)
 {
-  usb_dbg_register_type(type);
+  usb_dbg_register_type(type, devid);
 }
 
 void bx_real_sim_c::usb_debug_trigger(int type, int trigger, Bit64u param0, int param1, int param2)

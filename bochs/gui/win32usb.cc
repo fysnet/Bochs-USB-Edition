@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////
 //
 //  Copyright (C) 2023-2025  Benjamin David Lunt
-//  Copyright (C) 2003-2025  The Bochs Project
+//  Copyright (C) 2003-2026  The Bochs Project
 //
 //  This library is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU Lesser General Public
@@ -333,7 +333,7 @@ int hc_uhci_init(HWND hwnd)
   Bit32u frame_addr, frame_num;
   int ret = IDOK;
 
-  UHCI_state = (bx_list_c*)SIM->get_param("usb_uhci", SIM->get_bochs_root());
+  UHCI_state = get_uhci_state();
   if (UHCI_state == NULL)
     return -1;
 

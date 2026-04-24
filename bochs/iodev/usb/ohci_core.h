@@ -247,8 +247,15 @@ public:
 
   int event_handler(int event, void *ptr, int port);
 
+#if BX_USB_DEBUGGER
+  void enable_usbdbg() {usb_debug = true;}
+#endif
+
 protected:
   bx_ohci_core_t hub;
+#if BX_USB_DEBUGGER
+  bool           usb_debug;
+#endif
 
   USBAsync *packets;
 
